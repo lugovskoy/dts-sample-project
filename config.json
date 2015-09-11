@@ -5,9 +5,9 @@
     {"name": "prefix", "type": "text", "title": "Install directory prefix (used for configure script)"},
     {"name": "bit64", "type": "bool", "title": "Support for 64 bit"}
   ],
-  "refs": [
-    {"name": "tcc", "ref": "compile.tcc"}
-  ],
+  "refs": {
+     "tcc": "compile.tcc"
+  },
   "init": {
     "interpreter": "bash",
     "command": "rm -rf * && git clone https://github.com/lugovskoy/dts-sample-project.git ."
