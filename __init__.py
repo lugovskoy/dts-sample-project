@@ -20,9 +20,6 @@ class Task(object):
     def setup(srcdir):
         print "__setup__"
         retcode = subprocess.call(['git', 'clone', 'https://github.com/lugovskoy/dts-sample-project.git', srcdir])
-        return
-        if retcode != 0:
-            raise Exception("Cannot setup git repo in {0}".format(srcdir))
 
 
     def __init__(self):
@@ -42,7 +39,7 @@ class Task(object):
         retcode = subprocess.call(['./configure', '--prefix={0}'.format(zlib_resdir)], env={'CC': refs['tcc']})
         retcode = subprocess.call(['make'])
         retcode = subprocess.call(['make', 'install'])
-        q.put({'zlib': os.path.join(zlib_resdir, 'bin')})
+        q.put({'zlib': zlib_resdir})
 
 
 
