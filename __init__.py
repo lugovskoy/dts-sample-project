@@ -5,43 +5,44 @@ import os.path
 import subprocess
 
 
-class SubTask():
-    def __init__(self, output_dir, log):
-        self.__output_dir = output_dir
-        self.__log = log
+class Task(object):
+    title = "Zlib library"
+    version = 1
+    arguments = [
+        {"name": "prefix", "type": "text", "title": "Install directory prefix (used for configure script)"},
+        {"name": "bit64", "type": "bool", "title": "Support for 64 bit"}
+    ]
+    refs = {
+        "tcc": "compile.tcc"
+    }
+
+    @staticmethod
+    def setup(srcdir):
+        print "__setup__"
+        retcode = subprocess.call(['git', 'clone', 'https://github.com/lugovskoy/dts-sample-project.git', srcdir])
+        return
+        if retcode != 0:
+            raise Exception("Cannot setup git repo in {0}".format(srcdir))
+
+
+    def __init__(self):
+        print "proj::__init__"
         self.__wd = os.path.dirname(os.path.realpath(__file__))
-        self.__init_done = False
-        print "__init__"
+        os.chdir(self.__wd)
+        retcode = subprocess.call(['wget', 'http://zlib.net/zlib-1.2.8.tar.gz'])
+        retcode = subprocess.call(['tar', 'xvzf', 'zlib-1.2.8.tar.gz'])
 
 
-    def is_initialized(self):
-        print "init", self.__init_done
-        return self.__init_done
+    def __call__(self, args, refs, resdir, q):
+        print "proj::__call__"
+        zlib_srcdir = os.path.join(self.__wd, 'zlib-1.2.8')
+        zlib_resdir = os.path.join(resdir, 'opt2')
 
+        os.chdir(zlib_srcdir)
+        retcode = subprocess.call(['./configure', '--prefix={0}'.format(zlib_resdir)], env={'CC': refs['tcc']})
+        retcode = subprocess.call(['make'])
+        retcode = subprocess.call(['make', 'install'])
+        q.put({'zlib': os.path.join(zlib_resdir, 'bin')})
 
-    def initialize(self):
-        print "initialize"
-        self.__init_done = True
-        script = os.path.join(self.__wd, 'get_zlib.sh')
-        retcode = subprocess.call([script, self.__wd])
-        self.__init_done = retcode == 0
-
-
-    def is_enabled(self):
-        return True
-
-
-    def __result(self, output_dir, retcode):
-        return {
-          'gcc': os.path.join(output_dir, 'bin'),
-          'passed': retcode == 0
-        }
-
-
-    def run(self, q, args):
-        print "run"
-        script = os.path.join(self.__wd, 'conf_and_make.sh')
-        retcode = subprocess.call([script, self.__wd, self.__output_dir, self.__log, args['tcc']])
-        q.put({'retcode': retcode, 'result': self.__result(self.__output_dir, retcode)})
 
 
